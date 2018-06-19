@@ -370,8 +370,8 @@ class psie(gen_lens):
         self.size=size
         self.npix=npix
         self.pixel=float(self.size)/float((self.npix-1))
-        self.x0=x0/self.pixel+(self.npix-1) / 2
-        self.y0=y0/self.pixel+(self.npix-1) / 2
+        self.x0=x0/self.pixel+(self.npix-1) / 2.
+        self.y0=y0/self.pixel+(self.npix-1) / 2.
         self.potential()
         self.computed_deta=False
         
@@ -391,7 +391,7 @@ class psie(gen_lens):
         #                 +((y-y0)*self.pixel)**2*(1-self.ell)
         #                 +self.theta_c**2)*self.norm
         #self.pot=pot#/no
-        self.pot=np.sqrt(r*r*self.pixel**2+self.theta_c**2)*self.norm
+        self.pot=np.sqrt(r*r*no+self.theta_c**2)*self.norm
         self.a2,self.a1=np.gradient(self.pot/self.pixel**2)
         self.a12,self.a11=np.gradient(self.a1)
         self.a22,self.a21=np.gradient(self.a2)
@@ -663,14 +663,14 @@ class postage_stamp(object):
 
 
     def ray_trace(self):
-        px=self.df.pixel#size/(self.df.npix-1)
+        px=self.df.pixel
         x1pix=(self.x1+self.df.size/2.0)/px
         x2pix=(self.x2+self.df.size/2.0)/px
 
         a1 = map_coordinates(self.df.a1,
-                             [x2pix,x1pix],order=2)*px
+                             [x2pix,x1pix],order=5)*px
         a2 = map_coordinates(self.df.a2,
-                             [x2pix,x1pix],order=2)*px
+                             [x2pix,x1pix],order=5)*px
         
         y1=(self.x1-a1) # y1 coordinates on the source plane
         y2=(self.x2-a2) # y2 coordinates on the source plane
