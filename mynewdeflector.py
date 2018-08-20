@@ -452,8 +452,10 @@ class deflector(gen_lens):
             return vector
         # use the pad method from numpy.lib to add zeros (padwithzeros) in a
         # frame with thickness self.kappa.shape[0]
-        self.kappa=np.lib.pad(self.kappa, self.kappa.shape[0], 
+        self.kappa=np.lib.pad(self.kappa, 2*self.kappa.shape[0], 
                               padwithzeros)
+        #self.kappa=np.lib.pad(self.kappa, self.kappa.shape[0], 
+        #                      mode='wrap')
         
     # calculate the potential by solving the poisson equation
     def potential_from_kappa(self):
@@ -472,6 +474,8 @@ class deflector(gen_lens):
         potential=fftengine.ifftn(kappa_ft) #units should be rad**2
         if self.pad:
             pot=self.mapCrop(potential.real)
+        else:
+            pot=potential.real
         return pot
     
     # returns the map of the gravitational time delay
@@ -544,6 +548,30 @@ class deflector_from_potential(deflector):
         self.kappa=0.5*(self.a11+self.a22)
         self.pot=pot*self.pixel**2
 
+class deflector_from_alpha(deflector):
+
+    # initialize the deflector using  maps of the deflection angles 
+    def __init__(self,a1,a2,size,pad=False):
+        
+        self.pad=pad
+        self.size=size
+        self.computed_deta=False
+        self.npix=a1.shape[0]
+        self.pixel=self.size/(self.npix-1)
+        self.a1=a1/self.pixel
+        self.a2=a2/self.pixel
+        self.a12,self.a11=np.gradient(self.a1)
+        self.a22,self.a21=np.gradient(self.a2)
+        self.kappa=0.5*(self.a11+self.a22)
+        self.nx=self.kappa.shape[0]
+        self.ny=self.kappa.shape[1]
+        self.pixel_scale=self.pixel
+        self.pixel=float(self.size)/float(self.npix-1)
+        if (self.pad):
+            self.kpad()
+        pot=self.potential_from_kappa()
+        self.pot_exists=True
+        self.pot=pot*self.pixel_scale**2
 
 
 class sersic(object):
